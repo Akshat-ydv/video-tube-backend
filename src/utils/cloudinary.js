@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import { log } from "console";
-import fs from "fs";
+import { unlink } from "node:fs/promises";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,19 +7,33 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Utility to safely remove local files
+const removeLocalFile = async (localFilePath) => {
+  try {
+    await unlink(localFilePath);
+  } catch (error) {
+    console.error("Local file cleanup failed:", error.message);
+  }
+};
+
 const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
-    //uplad the file to cloudinary
+
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
-    // file has been uploaded successfully
-    // console.log("File is uploaded on cloudinary", response.url);
-    fs.unlink(localFilePath); // it delets the file from public/temp folder
+
+    // Remove local file after successful upload
+    await removeLocalFile(localFilePath);
+
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath); // remove the locally saved temporary file as the upload operation got failed
+    console.error("Cloudinary upload failed:", error);
+
+    // Remove local file if upload fails
+    await removeLocalFile(localFilePath);
+
     return null;
   }
 };
