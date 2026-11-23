@@ -1,24 +1,20 @@
 import { Router } from "express";
-
 import {
-  createPlaylist,
-  getUserPlaylists,
-  getPlaylistById,
   addVideoToPlaylist,
-  removeVideoFromPlaylist,
+  createPlaylist,
   deletePlaylist,
+  getPlaylistById,
+  getUserPlaylists,
+  removeVideoFromPlaylist,
   updatePlaylist,
 } from "../controllers/playlist.controller.js";
-
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(verifyJWT);
+router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 
-router.route("/create").post(createPlaylist);
-
-router.route("/user/:userId").get(getUserPlaylists);
+router.route("/").post(createPlaylist);
 
 router
   .route("/:playlistId")
@@ -26,8 +22,9 @@ router
   .patch(updatePlaylist)
   .delete(deletePlaylist);
 
-router.route("/:playlistId/add/:videoId").patch(addVideoToPlaylist);
+router.route("/add/:videoId/:playlistId").patch(addVideoToPlaylist);
+router.route("/remove/:videoId/:playlistId").patch(removeVideoFromPlaylist);
 
-router.route("/:playlistId/remove/:videoId").patch(removeVideoFromPlaylist);
+router.route("/user/:userId").get(getUserPlaylists);
 
 export default router;
